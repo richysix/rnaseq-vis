@@ -1,7 +1,3 @@
-# raw_counts <- rnaseqtools::load_rnaseq_data('data/counts.shield-subset.tsv')
-
-# sample_info <- rnaseqtools::load_rnaseq_samples('data/zfs-rnaseq-sampleInfo.tsv')
-
 uploadRNASeqInput <- function(id) {
   tagList(
     fileInput(NS(id, "sampleFile"), "Sample File"),
@@ -73,7 +69,7 @@ uploadRNASeqApp <- function() {
   server <- function(input, output, session) {
     data_list <- uploadRNASeqServer("rnaseq-data")
     output$samples <- renderTable(head(data_list$sampleInfo()))
-    output$counts <- renderTable(data_list$counts()[1:5,1:6])
+    output$counts <- renderTable(data_list$counts()[1:5,c(5,7,9:13)])
   }
   shinyApp(ui, server)
 } 
