@@ -5,21 +5,48 @@
 uploadRNASeqInput <- function(id) {
   tagList(
     fileInput(NS(id, "sampleFile"), "Sample File"),
-    fileInput(NS(id, "countFile"), "Count File")
+    fileInput(NS(id, "countFile"), "Count File"),
+    checkboxInput(NS(id, "testdata"), 'Use test data', value = FALSE, width = NULL)
   )
 }
 
 uploadRNASeqServer <- function(id) {
-  
   moduleServer(id, function(input, output, session) {
+    observe({
+      updateCheckboxInput(session, "testdata", value = FALSE)
+    }) |>
+      bindEvent(input$sampleFile, input$countFile)
+    
+    sample_file <- reactive({
+      if (input$testdata) {
+        file_path <- system.file("extdata", "zfs-rnaseq-sampleInfo.tsv", package = "rnaseqVis")
+        print(file_path)
+        return(file_path)
+      } else {
+        print(input$sampleFile)
+        return(input$sampleFile$datapath)
+      }
+    })
+
     sampleInfo <- reactive({
-      req(input$sampleFile)
-      rnaseqtools::load_rnaseq_samples(input$sampleFile$datapath)
+      req(sample_file())
+      rnaseqtools::load_rnaseq_samples(sample_file())
     })
     
+    
+    counts_file <- reactive({
+      if (input$testdata) {
+        file_path <- system.file("extdata", "counts.shield-subset.tsv", package = "rnaseqVis")
+        print(file_path)
+        return(file_path)
+      } else {
+        print(input$countFile)
+        return(input$countFile$datapath)
+      }
+    })
     counts <- reactive({
-      req(input$countFile)
-      rnaseqtools::load_rnaseq_data(input$countFile$datapath)
+      req(counts_file())
+      rnaseqtools::load_rnaseq_data(counts_file())
     })
     
     list(
