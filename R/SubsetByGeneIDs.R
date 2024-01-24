@@ -67,15 +67,33 @@ SubsetByGeneIDsServer <- function(id, debug = FALSE) {
     })
 
     reactive({
-      if(is.null(geneIdsFile())){
-        return(NULL)
-      } else {
-        data <- readr::read_tsv(geneIdsFile(), show_col_types = FALSE,
-                                col_names = FALSE)
-        return(data[[1]])
-      }
+      load_gene_ids(geneIdsFile())
     })
   })
+}
+
+#' Load a file of gene ids
+#'
+#' `load_gene_ids()` takes a file name and returns the first column of the
+#' file.
+#' 
+#' @param gene_ids_file path to file of gene ids.
+#'
+#' @returns a vector of the first column of the file.
+#' If `gene_ids_file` is NULL, then it returns NULL
+#' 
+#' @examples
+#' ids_file <- system.file("extdata", "gene-ids.txt", package = "rnaseqVis")
+#' load_gene_ids(ids_file)
+#' 
+load_gene_ids <- function(gene_ids_file) {
+  if(is.null(gene_ids_file)){
+    return(NULL)
+  } else {
+    data <- readr::read_tsv(gene_ids_file, show_col_types = FALSE,
+                            col_names = FALSE)
+    return(data[[1]])
+  }
 }
 
 #' A test shiny app for the SubsetByGeneIDs module
