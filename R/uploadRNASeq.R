@@ -24,14 +24,36 @@ uploadRNASeqInput <- function(id) {
   )
 }
 
+#' Create Output to display uploaded sample and count data
+#'
+#' `uploadRNASeqOutput()` produces three table outputs for displaying 
+#' the data returned by the `uploadRNASeqServer()` function. The three
+#' outputs are labelled samples, counts and metadata. There are also two 
+#' [shinyBS::bsAlert()] anchor points to alert the user to missing data in 
+#' either the sample or count file
+#' 
+#' @param id namespace id for the UI components. Must match the id provided to the 
+#' [uploadRNASeqServer()] function.
+#'
+#' @returns a [htmltools::tagList()] containing three [shiny::tableOutput()]s 
+#' and two [shinyBS::bsAlert()] anchor points.
+#' 
+#' @export
+#'
+#' @examples
+#' 
+#' uploadRNASeqOutput("rnaseqData")
+#' 
 uploadRNASeqOutput <- function(id) {
   tagList(
-    h3('Sample Data:'),
+    h3("Sample Data:"),
     shinyBS::bsAlert(NS(id, "countsInputAlert")),
-    tableOutput('samples'),
-    h3('Count Data:'),
+    tableOutput("samples"),
+    h3("Count Data:"),
     shinyBS::bsAlert(NS(id, "sampleInputAlert")),
-    tableOutput('counts'),
+    tableOutput("counts"),
+    h3("Gene Metadata:"),
+    tableOutput("metadata")
   )
 }
 
@@ -209,7 +231,7 @@ uploadRNASeqServer <- function(id, debug = FALSE) {
       all_data()$sample_info
     })
     
-    # get normalised counts, either from the ranseq data object or
+    # get normalised counts, either from the rnaseq data object or
     # by using DESeq2 to calculate them
     # This may need a progress bar at some point
     count_data <- reactive({
@@ -228,10 +250,15 @@ uploadRNASeqServer <- function(id, debug = FALSE) {
       return(norm_counts)
     })
     
+    # extract gene metadata
+    gene_metadata <- reactive({
+      req(rnaseq_data())
+      rnaseqtools::get_gene_metadata(rnaseq_data())
+    })
     # return the sample info and count data
     list(
       sample_info = sample_info,
-      # count_metadata = metadata()
+      gene_metadata = gene_metadata,
       counts = count_data
     )
   })
@@ -263,6 +290,7 @@ uploadRNASeqApp <- function(debug = FALSE) {
     data_list <- uploadRNASeqServer("rnaseqData", debug)
     output$samples <- renderTable(data_list$sample_info()[1:5,1:5])
     output$counts <- renderTable(data_list$counts()[1:5,1:10])
+    output$metadata <- renderTable(data_list$gene_metadata()[1:5,])
   }
   shinyApp(ui, server)
 }
