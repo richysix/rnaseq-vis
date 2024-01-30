@@ -1,4 +1,5 @@
 sample	public_name	accession_number	condition	stage	stageName	sampleName
+zmp_ph100_A	ZMP_phenotype_100_A	ERS1079239	ZFS:0000001	Zygote:1-cell	1-cell	1-cell-1
 zmp_ph133_B	ZMP_phenotype_133_B	ERS1079239	ZFS:0000001	Zygote:1-cell	1-cell	1-cell-1
 zmp_ph133_D	ZMP_phenotype_133_D	ERS1079240	ZFS:0000001	Zygote:1-cell	1-cell	1-cell-2
 zmp_ph133_E	ZMP_phenotype_133_E	ERS1079241	ZFS:0000001	Zygote:1-cell	1-cell	1-cell-3
