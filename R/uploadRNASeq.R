@@ -55,11 +55,14 @@ uploadRNASeqOutput <- function(id) {
 #' 
 uploadRNASeqServer <- function(id, debug = FALSE) {
   moduleServer(id, function(input, output, session) {
+    # set up observer to untick test data checkbox if a sample/count
+    # file is uploaded
     observe({
       updateCheckboxInput(session, "testdata", value = FALSE)
     }) |>
       bindEvent(input$sampleFile, input$countFile)
     
+    # return sample file path depending on whether the test data checkbox is checked
     sample_file <- reactive({
       if (input$testdata) {
         file_path <- system.file("extdata", "zfs-rnaseq-sampleInfo.tsv", package = "rnaseqVis")
@@ -70,12 +73,14 @@ uploadRNASeqServer <- function(id, debug = FALSE) {
         return(input$sampleFile$datapath)
       }
     })
-
+    
+    # load sample data from file
     init_sample_info <- reactive({
       req(sample_file())
       rnaseqtools::load_rnaseq_samples(sample_file())
     })
     
+    # return counts file path depending on whether the test data checkbox is checked
     counts_file <- reactive({
       if (input$testdata) {
         file_path <- system.file("extdata", "counts.shield-subset.tsv", package = "rnaseqVis")
@@ -86,6 +91,7 @@ uploadRNASeqServer <- function(id, debug = FALSE) {
         return(input$countFile$datapath)
       }
     })
+    # load rnaseq data from file
     init_rnaseq_data <- reactive({
       req(counts_file())
       counts <- rnaseqtools::load_rnaseq_data(counts_file())
@@ -96,6 +102,12 @@ uploadRNASeqServer <- function(id, debug = FALSE) {
       return(counts)
     })
     
+    # This takes the samples and counts data frames and checks whether 
+    # there are any samples in one that are not in the other
+    # If there are, the extra samples are removed and a warning alert is created
+    # The returned list contains sample and rnaseq_data data frames with the
+    # same sample in each. This ensures that if we need to use DESeq2 to 
+    # calculate normalised counts the sample data will match
     all_data <- reactive({
       req(init_sample_info())
       req(init_rnaseq_data())
@@ -187,6 +199,7 @@ uploadRNASeqServer <- function(id, debug = FALSE) {
       )
     })
     
+    # unpack the all_data reactive list
     rnaseq_data <- reactive({
       req(all_data())
       all_data()$rnaseq_data
@@ -196,6 +209,9 @@ uploadRNASeqServer <- function(id, debug = FALSE) {
       all_data()$sample_info
     })
     
+    # get normalised counts, either from the ranseq data object or
+    # by using DESeq2 to calculate them
+    # This may need a progress bar at some point
     count_data <- reactive({
       req(rnaseq_data())
       req(sample_info())
@@ -212,6 +228,7 @@ uploadRNASeqServer <- function(id, debug = FALSE) {
       return(norm_counts)
     })
     
+    # return the sample info and count data
     list(
       sample_info = sample_info,
       # count_metadata = metadata()
