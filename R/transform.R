@@ -30,7 +30,7 @@ transformInput <- function(id) {
 
 #' Server function to transform a count matrix with a selected function
 #'
-#' `transformServer()` transforms the supplied counts with the approriate function
+#' `transformServer()` transforms the supplied counts with the appropriate function
 #' based on the radio buttons selection
 #' 
 #' @param id namespace id for the UI components. Must match the id provided to the 

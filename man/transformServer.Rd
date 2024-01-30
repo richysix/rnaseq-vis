@@ -16,7 +16,7 @@ transformServer(id, counts = NULL)
 a \code{\link[shiny:reactive]{shiny::reactive()}} object which is the transformed counts
 }
 \description{
-\code{transformServer()} transforms the supplied counts with the approriate function
+\code{transformServer()} transforms the supplied counts with the appropriate function
 based on the radio buttons selection
 }
 \examples{
