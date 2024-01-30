@@ -4,7 +4,7 @@
 \alias{uploadRNASeqApp}
 \title{A test shiny app for the uploadRNASeq module}
 \usage{
-uploadRNASeqApp()
+uploadRNASeqApp(debug = FALSE)
 }
 \value{
 a \code{\link[shiny:shinyApp]{shiny::shinyApp()}} object

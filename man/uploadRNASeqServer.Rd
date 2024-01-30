@@ -4,7 +4,7 @@
 \alias{uploadRNASeqServer}
 \title{Server function to upload sample and count data files}
 \usage{
-uploadRNASeqServer(id)
+uploadRNASeqServer(id, debug = FALSE)
 }
 \arguments{
 \item{id}{namespace id for the UI components. Must match the id provided to the
