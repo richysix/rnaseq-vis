@@ -2,6 +2,10 @@
 
 export(SubsetByGeneIDsInput)
 export(SubsetByGeneIDsServer)
+export(max_scale)
+export(transformInput)
+export(transformServer)
+export(transform_counts)
 export(uploadRNASeqInput)
 export(uploadRNASeqServer)
 import(shiny)
