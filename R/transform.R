@@ -48,7 +48,6 @@ transformInput <- function(id) {
 transformServer <- function(id, counts = NULL) {
   stopifnot(is.reactive(counts))
   moduleServer(id, function(input, output, session) {
-    
     reactive({
       req(input$transform_func)
       if (is.null(counts())) {

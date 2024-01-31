@@ -42,31 +42,55 @@ clusterInput <- function(id) {
 #' 
 #' clusterServer("rnaseqData", counts = reactive(rnaseqVis::counts[1:10,1:5]))
 #' 
-clusterServer <- function(id, counts = NULL, gene_metadata = NULL) {
+clusterServer <- function(id, counts = NULL, gene_metadata = NULL, debug = FALSE) {
   stopifnot(is.reactive(counts))
   stopifnot(is.reactive(gene_metadata))
   moduleServer(id, function(input, output, session) {
-    reactive({
+    counts_clustered <- reactive({
       req(counts())
       req(gene_metadata())
+      
+      if (debug) {
+        print(counts())
+        print(gene_metadata())
+      }
       counts_m <- as.matrix(counts())
+      if (debug) {
+        print(counts_m[1:5,1:5])
+        print(dim(counts_m))
+        print(length(gene_metadata()$GeneID))
+      }
       rownames(counts_m) <- gene_metadata()$GeneID
       
       possible_selections <- c("genes", "samples")
       index <- seq_along(possible_selections)[ possible_selections %in% input$clusterCheckGroup ] |> 
         sum()
       cluster_type <- c("none", "genes", "samples", "both")
-      counts_clustered <- switch(
+      switch(
         cluster_type[index + 1],
         "none" = counts_m,
         "genes" = cluster_genes(counts_m),
         "samples" = cluster_samples(counts_m),
         "both" = cluster_both(counts_m)
       )
-
-      return(counts_clustered)
     })
     
+    metadata_clustered <- reactive({
+      req(counts_clustered())
+      req(gene_metadata())
+      # reorder metadata
+      new_order <- sapply(rownames(counts_clustered()), 
+                          function(x){ which(gene_metadata()$GeneID == x) }, 
+                          USE.NAMES = FALSE)
+      gene_metadata()[ new_order, ]
+    })
+      
+    return(
+      list(
+        "counts" = counts_clustered,
+        "gene_metadata" = metadata_clustered
+      )
+    )
   })
 }
 
@@ -206,7 +230,8 @@ clusterApp <- function() {
       mainPanel(
         verbatimTextOutput("rownames"),
         tableOutput("original_counts"),
-        tableOutput("clustered_counts")
+        tableOutput("clustered_counts"),
+        tableOutput("clustered_metadata")
       )
     )
   )
@@ -215,9 +240,10 @@ clusterApp <- function() {
     test_counts <- rnaseqVis::counts[1:10, 1:5]
     counts_clustered <- clusterServer("cluster", counts = reactive(test_counts),
                                       gene_metadata = reactive(rnaseqVis::gene_metadata[1:10,]))
-    output$rownames <- renderText(rownames(counts_clustered()))
+    output$rownames <- renderText(rownames(counts_clustered$counts()))
     output$original_counts <- renderTable(test_counts)
-    output$clustered_counts <- renderTable(counts_clustered())
+    output$clustered_counts <- renderTable(counts_clustered$counts())
+    output$clustered_metadata <- renderTable(counts_clustered$metadata())
   }
   shinyApp(ui, server)
 }
