@@ -20,6 +20,27 @@ SubsetByGeneIDsInput <- function(id) {
   )
 }
 
+#' Create UI components to upload a file to use to subset the data
+#' 
+#' `SubsetByGeneIDsOutput()` creates a [shinyBS::bsAlert()] anchor point to
+#' allow alerting the user if any of the supplied gene IDs are not found in
+#' the data
+#' 
+#' @param id namespace id for the UI components. Must match the id provided to the 
+#' [SubsetByGeneIDsServer()] function.
+#' 
+#' @returns a [htmltools::tagList()] containing a [shinyBS::bsAlert()] anchor point
+#' 
+#' @examples 
+#' SubsetByGeneIDsOutput("geneIds")
+#' 
+#' @export
+SubsetByGeneIDsOutput <- function(id) {
+  tagList(
+    shinyBS::bsAlert(NS(id, "subsetAlert"))
+  )
+}
+
 #' Server function to upload a file to use to subset the data
 #' 
 #' `SubsetByGeneIDsServer()` implements uploading a file of gene IDs to use to 
@@ -41,7 +62,9 @@ SubsetByGeneIDsInput <- function(id) {
 #' 
 #' @export
 #' 
-SubsetByGeneIDsServer <- function(id, debug = FALSE) {
+SubsetByGeneIDsServer <- function(id, counts = NULL, gene_metadata = NULL, debug = FALSE) {
+  stopifnot(is.reactive(counts))
+  stopifnot(is.reactive(gene_metadata))
   stopifnot(!is.reactive(debug))
   moduleServer(id, function(input, output, session) {
     upload_state <- reactiveValues(
@@ -50,25 +73,66 @@ SubsetByGeneIDsServer <- function(id, debug = FALSE) {
     observe({
       if(debug) message("Gene IDs file uploaded")
       upload_state$state <- 'uploaded'
-    }) |> bindEvent(input$geneIdsFile)
+    }, label = "Upload state") |> bindEvent(input$geneIdsFile)
     observe({
       if(debug) message("Gene IDs file reset")
       upload_state$state <- 'reset'
-    }) |> bindEvent(input$subsetReset)
+    }, label = "Reset state") |> bindEvent(input$subsetReset)
     
     geneIdsFile <- reactive({
-      req(input$geneIdsFile)
-      req(upload_state$state)
+      if (is.null(input$geneIdsFile) | is.null(upload_state$state)) {
+        return(NULL)
+      }
       if (upload_state$state == "uploaded") {
         return(input$geneIdsFile$datapath)
       } else {
         return(NULL)
       }
     })
-
-    reactive({
+    gene_ids <- reactive({
       load_gene_ids(geneIdsFile())
     })
+    
+    subset <- reactive({
+      req(counts())
+      req(gene_metadata())
+      
+      if (debug) {
+        print(head(counts()))
+        print(head(gene_metadata()))
+        print(gene_ids())
+      }
+      if (is.null(gene_ids())) {
+        counts_list <- list(
+            "counts_subset" = counts(),
+            "gene_metadata_subset" = gene_metadata()
+        )
+      } else {
+        # find any genes in gene_ids that don't exist in counts
+        if (any(!(gene_ids() %in% gene_metadata()$GeneID))) {
+          # create alert
+          missing_genes <- setdiff(gene_ids(), gene_metadata()$GeneID)
+          msg <- paste("The following gene IDs where not found in the data to subset:",
+                       paste0(missing_genes, collapse = ", "),
+                       sep = "<br>")
+          shinyBS::createAlert(session, anchorId = NS(id, "subsetAlert"),
+                               alertId = "missing_genes", title = "Gene IDs missing from counts",
+                               content = msg, append = FALSE, style = "danger")
+        }
+        
+        selected_rows <- gene_metadata()$GeneID %in% gene_ids()
+        counts_list <- list(
+          "counts_subset" = counts()[ selected_rows, ],
+          "gene_metadata_subset" = gene_metadata()[ selected_rows, ]
+        )
+      }
+      return(counts_list)
+    })
+    
+    list(
+      "counts_subset" = reactive(subset()$counts_subset),
+      "gene_metadata_subset" = reactive(subset()$gene_metadata_subset)
+    )
   })
 }
 
@@ -118,15 +182,22 @@ SubsetByGeneIDsApp <- function(debug = FALSE) {
         SubsetByGeneIDsInput("geneIds")
       ),
       mainPanel(
-        tableOutput('geneIds')
+        SubsetByGeneIDsOutput("geneIds"),
+        h3("Count Data:"),
+        tableOutput('counts'),
+        h3("Gene Metadata:"),
+        tableOutput('metadata')
       )
     )
   )
   
   server <- function(input, output, session) {
-    geneIds <- SubsetByGeneIDsServer("geneIds", debug)
-    output$geneIds <- renderTable(head(geneIds()))
-    output$counts <- renderTable(data_list$counts()[1:5,1:6])
+    data_list <- SubsetByGeneIDsServer("geneIds", 
+                                       "counts" = reactive(rnaseqVis::counts),
+                                       "gene_metadata" = reactive(rnaseqVis::gene_metadata),
+                                       "debug" = debug)
+    output$counts <- renderTable(data_list$counts_subset()[1:5,1:6])
+    output$metadata <- renderTable(data_list$gene_metadata_subset()[1:5,])
   }
   shinyApp(ui, server)
 } 
