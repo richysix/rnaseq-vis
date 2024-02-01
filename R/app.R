@@ -19,7 +19,8 @@ rnaseqVisApp <- function(debug = FALSE, ...) {
                    uploadRNASeqOutput("upload"),
                  )
                )
-      )
+      ),
+      tabPanel("Help", includeMarkdown("README.md"))
     )
   )
   server <- function(input, output, session) {
