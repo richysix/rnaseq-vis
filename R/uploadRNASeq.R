@@ -133,6 +133,7 @@ uploadRNASeqServer <- function(id, debug = FALSE) {
     all_data <- reactive({
       req(init_sample_info())
       req(init_rnaseq_data())
+      
       sample_info <- init_sample_info()
       rnaseq_data <- init_rnaseq_data()
       if (debug) {
@@ -144,6 +145,10 @@ uploadRNASeqServer <- function(id, debug = FALSE) {
       if (is.null(counts)) {
         counts <- rnaseqtools::get_counts(rnaseq_data)
       }
+      
+      # close any open alerts
+      shinyBS::closeAlert(session, "sampleIdsAlert")
+      shinyBS::closeAlert(session, "countSampleIdsAlert")
       sample_subset <- tryCatch(
         { rnaseqtools::check_samples_match_counts(counts, sample_info)
           return(sample_info) },
@@ -151,6 +156,17 @@ uploadRNASeqServer <- function(id, debug = FALSE) {
           if (any(grepl("missing_from.*_counts", class(w)))) {
             # subset sample info to samples in counts
             available_samples <- intersect(sample_info$sample, colnames(counts))
+            if (length(available_samples) == 0){
+              # create an alert and return NULL
+              msg <- paste("<b>None</b> of the samples in the samples file match any of those in the counts file.",
+                           sep = "<br>")
+              # generate alert
+              shinyBS::createAlert(session, anchorId = NS(id, "sampleInputAlert"),
+                                   alertId = "sampleIdsAlert", title = "Sample IDs missing from counts",
+                                   content = msg, append = FALSE, style = "danger"
+              )
+              return(NULL)
+            }
             samples <- sample_info[ sample_info$sample %in% available_samples, ]
             # parse message
             if ("missing_from_both_samples_and_counts" %in% class(w)) {
@@ -165,7 +181,7 @@ uploadRNASeqServer <- function(id, debug = FALSE) {
             # generate alert
             shinyBS::createAlert(session, anchorId = NS(id, "sampleInputAlert"),
                                  alertId = "sampleIdsAlert", title = "Sample IDs missing from counts",
-                                 content = msg, append = FALSE, style = "danger"
+                                 content = msg, append = FALSE, style = "warning"
             )
           } else {
             samples <- sample_info
@@ -188,6 +204,21 @@ uploadRNASeqServer <- function(id, debug = FALSE) {
           if (any(grepl("missing_from.*_samples", class(w)))) {
             # subset rnaseq_data to samples
             rnaseq_subset <- rnaseqtools::subset_to_samples(rnaseq_data, sample_info)
+            count_samples <- colnames(rnaseq_data) |> 
+              (function(x){ sub(" count", "", x) })() |> 
+              (function(x){ sub(" normalised", "", x) })()
+            matching_samples <- intersect(sample_info$sample, count_samples)
+            if (length(matching_samples) == 0){
+              # create an alert and return NULL
+              msg <- paste("<b>None</b> of the samples in the counts file match any of those in the samples file.",
+                           sep = "<br>")
+              # generate alert
+              shinyBS::createAlert(session, anchorId = NS(id, "countsInputAlert"),
+                                   alertId = "countSampleIdsAlert", title = "Sample IDs missing from samples file",
+                                   content = msg, append = FALSE, style = "danger"
+              )
+              return(NULL)
+            }
             # parse message
             if ("missing_from_both_samples_and_counts" %in% class(w)) {
               # remove first half of message
@@ -202,7 +233,7 @@ uploadRNASeqServer <- function(id, debug = FALSE) {
             # generate alert
             shinyBS::createAlert(session, anchorId = NS(id, "countsInputAlert"),
                                  alertId = "countSampleIdsAlert", title = "Sample IDs missing from samples file",
-                                 content = msg, append = FALSE, style = "danger"
+                                 content = msg, append = FALSE, style = "warning"
             )
           } else {
             rnaseq_subset <- rnaseq_data
