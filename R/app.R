@@ -1,6 +1,6 @@
 library(shiny)
 
-rnaseqVisApp <- function(...) {
+rnaseqVisApp <- function(debug = FALSE, ...) {
   ui <- fluidPage(
     theme = "flatly.bootstrap.min.css",
     navbarPage(
@@ -22,14 +22,13 @@ rnaseqVisApp <- function(...) {
       )
     )
   )
-  server <- function(input, output, session, ...) {
-    extra_args = list(...)
-    debug <- ifelse(is.null(extra_args$debug), FALSE, extra_args$debug)
-    data_list <- uploadRNASeqServer("upload")
+  server <- function(input, output, session) {
+    data_list <- uploadRNASeqServer("upload", debug)
     counts_subset <- SubsetByGeneIDsServer(
       "subset", 
       "counts" = reactive(data_list$counts()),
-      "gene_metadata" = reactive(data_list$gene_metadata())
+      "gene_metadata" = reactive(data_list$gene_metadata()),
+      debug
     )
 
     # Transform counts
@@ -47,5 +46,5 @@ rnaseqVisApp <- function(...) {
     output$counts <- renderTable(clustered_counts$counts()[1:5,1:5])
     output$metadata <- renderTable(clustered_counts$gene_metadata()[1:5,])
   }
-  shinyApp(ui, server)
+  shinyApp(ui, server, ...)
 }

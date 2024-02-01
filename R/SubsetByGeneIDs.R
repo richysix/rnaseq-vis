@@ -65,7 +65,7 @@ SubsetByGeneIDsOutput <- function(id) {
 SubsetByGeneIDsServer <- function(id, counts = NULL, gene_metadata = NULL, debug = FALSE) {
   stopifnot(is.reactive(counts))
   stopifnot(is.reactive(gene_metadata))
-  stopifnot(!is.reactive(debug))
+  stopifnot(is.logical(debug))
   moduleServer(id, function(input, output, session) {
     upload_state <- reactiveValues(
       state = NULL
