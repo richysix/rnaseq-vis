@@ -108,19 +108,35 @@ SubsetByGeneIDsServer <- function(id, counts = NULL, gene_metadata = NULL, debug
             "gene_metadata_subset" = gene_metadata()
         )
       } else {
+        # close any open alerts
+        shinyBS::closeAlert(session, "all_genes_missing")
+        shinyBS::closeAlert(session, "genes_missing")
         # find any genes in gene_ids that don't exist in counts
-        if (any(!(gene_ids() %in% gene_metadata()$GeneID))) {
+        # first check whether none of them exist
+        if (all(!(gene_ids() %in% gene_metadata()$GeneID))) {
+          missing_genes <- setdiff(gene_ids(), gene_metadata()$GeneID)
+          msg <- paste("<b>None</b> of the supplied gene IDs were found in the data:",
+                       paste0(missing_genes, collapse = ", "),
+                       "The original data has been returned",
+                       sep = "<br>")
+          shinyBS::createAlert(session, anchorId = NS(id, "subsetAlert"),
+                               alertId = "all_genes_missing", title = "Gene IDs missing from counts",
+                               content = msg, append = FALSE, style = "danger")
+          selected_rows <- rep(TRUE, length(gene_metadata()$GeneID))
+        } else if (any(!(gene_ids() %in% gene_metadata()$GeneID))) {
           # create alert
           missing_genes <- setdiff(gene_ids(), gene_metadata()$GeneID)
           msg <- paste("The following gene IDs where not found in the data to subset:",
                        paste0(missing_genes, collapse = ", "),
                        sep = "<br>")
           shinyBS::createAlert(session, anchorId = NS(id, "subsetAlert"),
-                               alertId = "missing_genes", title = "Gene IDs missing from counts",
-                               content = msg, append = FALSE, style = "danger")
+                               alertId = "genes_missing", title = "Gene IDs missing from counts",
+                               content = msg, append = FALSE, style = "warning")
+          selected_rows <- gene_metadata()$GeneID %in% gene_ids()
+        } else {
+          selected_rows <- gene_metadata()$GeneID %in% gene_ids()
         }
         
-        selected_rows <- gene_metadata()$GeneID %in% gene_ids()
         counts_list <- list(
           "counts_subset" = counts()[ selected_rows, ],
           "gene_metadata_subset" = gene_metadata()[ selected_rows, ]
