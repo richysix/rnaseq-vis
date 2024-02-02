@@ -60,8 +60,8 @@ heatmapServer <- function(id, counts = NULL, sample_info = NULL,
       }
       # show sample names if matrix is small enough
       sample_info <- sample_info()
-      if (nrow(counts) <= 48) {
-        sample_names <- get_sample_labels(sample_info())
+      if (ncol(counts) <= 48) {
+        sample_names <- get_sample_labels(sample_info(), colnames(counts))
       } else {
         sample_names <- FALSE
       }
@@ -102,11 +102,13 @@ get_gene_labels <- function(gene_metadata) {
 }
 
 #' @rdname get_gene_labels
-get_sample_labels <- function(sample_info) {
+get_sample_labels <- function(sample_info, sample_ids) {
   if ("sampleName" %in% names(sample_info)) {
-    return(sample_info$sampleName)
+    labels <- sample_info$sampleName
+    names(labels) <- sample_info$sample
+    return(labels[ sample_ids ])
   } else {
-    return(sample_info$sample)
+    return(sample_ids)
   }
 }
 
