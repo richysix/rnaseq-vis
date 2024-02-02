@@ -37,7 +37,9 @@ transformInput <- function(id) {
 #' [transformInput()] function.
 #' @param counts a reactive counts object. Should contain only numeric columns
 #'
-#' @returns a [shiny::reactive()] object which is the transformed counts
+#' @returns a list of two [shiny::reactive()] objects
+#' * counts - the transformed counts
+#' * transform - the name of the selected transform
 #' 
 #' @export
 #'
@@ -48,7 +50,7 @@ transformInput <- function(id) {
 transformServer <- function(id, counts = NULL) {
   stopifnot(is.reactive(counts))
   moduleServer(id, function(input, output, session) {
-    reactive({
+    counts_transformed <- reactive({
       req(input$transform_func)
       if (is.null(counts())) {
         return(NULL)
@@ -56,6 +58,13 @@ transformServer <- function(id, counts = NULL) {
         return(transform_counts(counts(), input$transform_func))
       }
     })
+
+    return(
+      list(
+        "counts" = counts_transformed,
+        "transform" = reactive(input$transform_func)
+      )
+    )
   })
 }
 
@@ -137,8 +146,8 @@ transformApp <- function() {
   server <- function(input, output, session) {
     test_counts <- rnaseqVis::counts[1:10, 1:5]
     counts_transformed <- transformServer("transform", counts = reactive(test_counts))
-    output$func <- renderText(input$transform_func)
-    output$transformed_counts <- renderTable(counts_transformed())
+    output$func <- renderText(counts_transformed$transform())
+    output$transformed_counts <- renderTable(counts_transformed$counts())
   }
   shinyApp(ui, server)
 } 

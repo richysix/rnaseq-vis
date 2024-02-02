@@ -13,7 +13,11 @@ transformServer(id, counts = NULL)
 \item{counts}{a reactive counts object. Should contain only numeric columns}
 }
 \value{
-a \code{\link[shiny:reactive]{shiny::reactive()}} object which is the transformed counts
+a list of two \code{\link[shiny:reactive]{shiny::reactive()}} objects
+\itemize{
+\item counts - the transformed counts
+\item transform - the name of the selected transform
+}
 }
 \description{
 \code{transformServer()} transforms the supplied counts with the appropriate function
