@@ -4,7 +4,7 @@
 \alias{SubsetByGeneIDsServer}
 \title{Server function to upload a file to use to subset the data}
 \usage{
-SubsetByGeneIDsServer(id, debug = FALSE)
+SubsetByGeneIDsServer(id, counts = NULL, gene_metadata = NULL, debug = FALSE)
 }
 \arguments{
 \item{id}{namespace id for the UI components. Must match the id provided to the

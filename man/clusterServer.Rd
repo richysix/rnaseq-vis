@@ -4,7 +4,7 @@
 \alias{clusterServer}
 \title{Server function to cluster a count matrix by rows and/or columns}
 \usage{
-clusterServer(id, counts = NULL, gene_metadata = NULL)
+clusterServer(id, counts = NULL, gene_metadata = NULL, debug = FALSE)
 }
 \arguments{
 \item{id}{namespace id for the UI components. Must match the id provided to the

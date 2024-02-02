@@ -2,6 +2,7 @@
 
 export(RemoveZeroVariance)
 export(SubsetByGeneIDsInput)
+export(SubsetByGeneIDsOutput)
 export(SubsetByGeneIDsServer)
 export(clusterInput)
 export(clusterServer)
