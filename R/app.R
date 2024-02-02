@@ -5,20 +5,25 @@ rnaseqVisApp <- function(debug = FALSE, ...) {
     theme = "flatly.bootstrap.min.css",
     navbarPage(
       "rnaseqVis",
-      tabPanel("Input",
-               sidebarLayout(
-                 sidebarPanel(
-                   uploadRNASeqInput("upload"),
-                   SubsetByGeneIDsInput("subset"),
-                   transformInput("transform"),
-                   clusterInput("cluster"),
-                   width = 3
-                 ),
-                 mainPanel(
-                   SubsetByGeneIDsOutput("subset"),
-                   uploadRNASeqOutput("upload"),
-                 )
-               )
+      tabPanel(
+        "Input",
+        sidebarLayout(
+          sidebarPanel(
+            uploadRNASeqInput("upload"),
+            SubsetByGeneIDsInput("subset"),
+            transformInput("transform"),
+            clusterInput("cluster"),
+            width = 3
+          ),
+          mainPanel(
+            SubsetByGeneIDsOutput("subset"),
+            uploadRNASeqOutput("upload"),
+          )
+        )
+      ),
+      tabPanel(
+        "Heatmap",
+        heatmapOutput("hmap")
       ),
       tabPanel("Help", includeMarkdown("README.md"))
     )
@@ -37,10 +42,16 @@ rnaseqVisApp <- function(debug = FALSE, ...) {
     
     # Cluster counts
     clustered_counts <- clusterServer(
-      "cluster", counts = reactive(transformed_counts()), 
-      gene_metadata = counts_subset$gene_metadata,
+      "cluster", counts = reactive(transformed_counts$counts()), 
+      gene_metadata = reactive(counts_subset$gene_metadata()),
       debug = debug
     )
+    
+    heatmapServer("hmap", counts = reactive(clustered_counts$counts()),
+                  sample_info = reactive(data_list$sample_info()),
+                  gene_metadata = reactive(clustered_counts$gene_metadata()),
+                  transform = reactive(transformed_counts$transform()),
+                  debug = debug)
     
     # Outputs
     output$samples <- renderTable(head(data_list$sample_info()))
