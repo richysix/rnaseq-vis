@@ -10,7 +10,12 @@ SubsetByGeneIDsServer(id, counts = NULL, gene_metadata = NULL, debug = FALSE)
 \item{id}{namespace id for the UI components. Must match the id provided to the
 \code{\link[=SubsetByGeneIDsInput]{SubsetByGeneIDsInput()}} function.}
 
-\item{debug}{logical Turns on debugging messages. default: FALSE}
+\item{counts}{a reactive counts object. Should contain only numeric columns}
+
+\item{gene_metadata}{a reactive object. Contains the metadata for the genes
+present in the counts object.}
+
+\item{debug}{Turn on debugging message statements}
 }
 \value{
 a \code{\link[shiny:reactive]{shiny::reactive()}} object which is a vector of gene IDs if a file has been uploaded.

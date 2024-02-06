@@ -18,6 +18,17 @@ heatmapServer(
 \code{\link[=heatmapInput]{heatmapInput()}} function.}
 
 \item{counts}{a reactive counts object. Should contain only numeric columns}
+
+\item{sample_info}{a reactive object. Represents the samples and associated
+metadata}
+
+\item{gene_metadata}{a reactive object. Contains the metadata for the genes
+present in the counts object.}
+
+\item{transform}{reactive that contains the contents of input$transform from
+the transform module}
+
+\item{debug}{Turn on debugging message statements}
 }
 \value{
 a \code{\link[shiny:reactive]{shiny::reactive()}} object which is the heatmaped counts

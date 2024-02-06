@@ -27,6 +27,13 @@ heatmapOutput <- function(id) {
 #' @param id namespace id for the UI components. Must match the id provided to the 
 #' [heatmapInput()] function.
 #' @param counts a reactive counts object. Should contain only numeric columns
+#' @param sample_info a reactive object. Represents the samples and associated
+#' metadata
+#' @param gene_metadata a reactive object. Contains the metadata for the genes
+#' present in the counts object.
+#' @param transform reactive that contains the contents of input$transform from
+#' the transform module
+#' @param debug Turn on debugging message statements
 #'
 #' @returns a [shiny::reactive()] object which is the heatmaped counts
 #' 
@@ -108,7 +115,7 @@ get_sample_labels <- function(sample_info, sample_ids) {
     names(labels) <- sample_info$sample
     return(labels[ sample_ids ])
   } else {
-    return(sample_ids)
+    return(sample_info$sample)
   }
 }
 

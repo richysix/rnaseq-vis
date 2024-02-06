@@ -33,6 +33,9 @@ clusterInput <- function(id) {
 #' @param id namespace id for the UI components. Must match the id provided to the 
 #' [clusterInput()] function.
 #' @param counts a reactive counts object. Should contain only numeric columns
+#' @param gene_metadata a reactive object. Contains the metadata for the genes
+#' present in the counts object.
+#' @param debug Turn on debugging message statements
 #'
 #' @returns a [shiny::reactive()] object which is the clustered counts
 #' 

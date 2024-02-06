@@ -7,7 +7,7 @@
 \usage{
 get_gene_labels(gene_metadata)
 
-get_sample_labels(sample_info)
+get_sample_labels(sample_info, sample_ids)
 }
 \arguments{
 \item{gene_metadata}{data.frame - Gene metadata}

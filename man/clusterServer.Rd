@@ -11,6 +11,11 @@ clusterServer(id, counts = NULL, gene_metadata = NULL, debug = FALSE)
 \code{\link[=clusterInput]{clusterInput()}} function.}
 
 \item{counts}{a reactive counts object. Should contain only numeric columns}
+
+\item{gene_metadata}{a reactive object. Contains the metadata for the genes
+present in the counts object.}
+
+\item{debug}{Turn on debugging message statements}
 }
 \value{
 a \code{\link[shiny:reactive]{shiny::reactive()}} object which is the clustered counts

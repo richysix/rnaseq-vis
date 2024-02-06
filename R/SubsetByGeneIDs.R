@@ -49,7 +49,10 @@ SubsetByGeneIDsOutput <- function(id) {
 #' 
 #' @param id namespace id for the UI components. Must match the id provided to the 
 #' [SubsetByGeneIDsInput()] function.
-#' @param debug logical Turns on debugging messages. default: FALSE
+#' @param counts a reactive counts object. Should contain only numeric columns
+#' @param gene_metadata a reactive object. Contains the metadata for the genes
+#' present in the counts object.
+#' @param debug Turn on debugging message statements
 #' 
 #' @returns a [shiny::reactive()] object which is a vector of gene IDs if a file has been uploaded.
 #' If a file hasn't been uploaded or the reset button has been clicked it returns NULL
