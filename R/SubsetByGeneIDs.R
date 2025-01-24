@@ -74,11 +74,11 @@ SubsetByGeneIDsServer <- function(id, counts = NULL, gene_metadata = NULL, debug
       state = NULL
     )
     observe({
-      if(debug) message("Gene IDs file uploaded")
+      if (debug) message("Gene IDs file uploaded")
       upload_state$state <- 'uploaded'
     }, label = "Upload state") |> bindEvent(input$geneIdsFile)
     observe({
-      if(debug) message("Gene IDs file reset")
+      if (debug) message("Gene IDs file reset")
       upload_state$state <- 'reset'
     }, label = "Reset state") |> bindEvent(input$subsetReset)
     
@@ -122,6 +122,7 @@ SubsetByGeneIDsServer <- function(id, counts = NULL, gene_metadata = NULL, debug
                        paste0(missing_genes, collapse = ", "),
                        "The original data has been returned",
                        sep = "<br>")
+          if (debug) warning(msg)
           shinyBS::createAlert(session, anchorId = NS(id, "subsetAlert"),
                                alertId = "all_genes_missing", title = "Gene IDs missing from counts",
                                content = msg, append = FALSE, style = "danger")
@@ -132,6 +133,7 @@ SubsetByGeneIDsServer <- function(id, counts = NULL, gene_metadata = NULL, debug
           msg <- paste("The following gene IDs where not found in the data to subset:",
                        paste0(missing_genes, collapse = ", "),
                        sep = "<br>")
+          if (debug) warning(msg)
           shinyBS::createAlert(session, anchorId = NS(id, "subsetAlert"),
                                alertId = "genes_missing", title = "Gene IDs missing from counts",
                                content = msg, append = FALSE, style = "warning")
