@@ -89,11 +89,11 @@ countPlotOutput <- function(id) {
 #' gene_metadata = reactive(rnaseqVis::gene_metadata[1:10,]))
 #' 
 countPlotServer <- function(id, counts = NULL, sample_info = NULL,
-                          gene_metadata = NULL, debug = NULL) {
+                            gene_metadata = NULL, debug = NULL) {
   stopifnot(is.reactive(counts))
   stopifnot(is.reactive(sample_info))
   stopifnot(is.reactive(gene_metadata))
-
+  
   moduleServer(id, function(input, output, session) {
     
     # update select input with genes in current set
@@ -110,7 +110,7 @@ countPlotServer <- function(id, counts = NULL, sample_info = NULL,
                function(x){ 
                  class(sample_info()[[x]]) == "character" | 
                    class(sample_info()[[x]]) == "factor"
-      })
+               })
       categorical_columns <- colnames(sample_info())[ cat_columns ]
       if (debug) {
         message("Update x, fill and shape variable controls")
@@ -242,7 +242,7 @@ create_count_plot <- function(count_data, x_var, colour_var, colour_palette,
   plot <- ggplot2::ggplot(data = count_data, ggplot2::aes(x = .data[[x_var]], y = count))
   print(plot)
   
-  pos <- position_jitter(width = 0.3, height = 0)
+  pos <- ggplot2::position_jitter(width = 0.3, height = 0)
   # add points with the correct shapes
   if (debug) { message("Add points") }
   if (is.null(shape_var)) {
@@ -253,41 +253,42 @@ create_count_plot <- function(count_data, x_var, colour_var, colour_palette,
     }
     plot <- plot +
       ggplot2::geom_point(ggplot2::aes(fill = .data[[colour_var]]),
-                 size = 3, shape = 21, colour = 'black',
-                 position = pos ) +
-      scale_fill_manual(values = colour_palette)
+                          size = 3, shape = 21, colour = 'black',
+                          position = pos ) +
+      ggplot2::scale_fill_manual(values = colour_palette)
   } else {
     if (debug) { message("Shape palette is filled") }
     if (shape_palette[1] == 16) {
       plot <- plot +
-        geom_point(aes(colour = .data[[colour_var]],
-                       shape = .data[[shape_var]]), size = 3,
-                   position = pos) +
-        scale_colour_manual(values = colour_palette,
-                            guide = guide_legend(override.aes =
-                                                   list(shape = shape_palette[1]),
-                                                 order = 1)) +
-        scale_shape_manual(values = shape_palette,
-                           guide = guide_legend(order = 2))
+        ggplot2::geom_point(ggplot2::aes(colour = .data[[colour_var]],
+                                         shape = .data[[shape_var]]), size = 3,
+                            position = pos) +
+        ggplot2::scale_colour_manual(values = colour_palette,
+                                     guide = ggplot2::guide_legend(override.aes =
+                                                                     list(shape = shape_palette[1]),
+                                                                   order = 1)) +
+        ggplot2::scale_shape_manual(values = shape_palette,
+                                    guide = ggplot2::guide_legend(order = 2))
     } else {
       if (debug) { message("Shape palette is open") }
       plot <- plot +
-        geom_point(aes(fill = .data[[colour_var]],
-                       shape = .data[[shape_var]]), size = 3,
-                   position = pos ) +
-        scale_fill_manual(values = colour_palette,
-                          guide = guide_legend(override.aes =
-                                                 list(shape = shape_palette[1]),
-                                               order = 1)) +
-        scale_shape_manual(values = shape_palette,
-                           guide = guide_legend(order = 2))
+        ggplot2::geom_point(aes(fill = .data[[colour_var]],
+                                shape = .data[[shape_var]]), size = 3,
+                            position = pos ) +
+        ggplot2::scale_fill_manual(values = colour_palette,
+                                   guide = ggplot2::guide_legend(override.aes =
+                                                                   list(shape = shape_palette[1]),
+                                                                 order = 1)) +
+        ggplot2::scale_shape_manual(values = shape_palette,
+                                    guide = ggplot2::guide_legend(order = 2))
     }
   }
-
+  
   if (debug) { message("Add axis title") }
   plot + 
-    labs(y = "Normalised Counts") + 
-    theme_minimal()
+    ggplot2::labs(y = "Normalised Counts") + 
+    ggplot2::theme_minimal() +
+    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1, vjust = 1))
 }
 
 #' Make a vector of colours based on a character vector
@@ -371,7 +372,7 @@ countPlotApp <- function(debug = TRUE) {
       )
     )
   )
-
+  
   server <- function(input, output, session) {
     countPlotServer("rnaseq", counts = reactive(rnaseqVis::counts[1:10, 1:20]),
                     sample_info = reactive(rnaseqVis::sampleInfo[1:20,]),
